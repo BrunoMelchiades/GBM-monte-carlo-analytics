@@ -2,58 +2,57 @@ import numpy as np
 import matplotlib.pyplot as plt
 from analytics import GBMAnalytics
 
-def plotar_simulacao(paths: np.ndarray, T: float, max_caminhos_plot: int = 100) -> None:
+def plot_simulation(paths: np.ndarray, T: float, max_paths_to_plot: int = 100) -> None:
     """
-    Gera uma visualização de padrão institucional para a simulação de Monte Carlo.
+    Generates an institutional-grade visualization profile for the Monte Carlo simulation.
     
-    Plota uma nuvem amostral de trajetórias com alta transparência e sobrepõe
-    as bandas dos intervalos de confiança (95%) e a média esperada calculadas
-    pela classe GBMAnalytics.
+    Plots a highly transparent sample cloud of trajectories and overlays the
+    95% confidence intervals and the expected mean trajectory extracted from GBMAnalytics.
     """
-    # 1. Extração de Metadados da Matriz (n_steps + 1, n_paths)
+    # 1. Extract metadata from matrix dimensions (n_steps + 1, n_paths)
     n_steps = paths.shape[0] - 1
     n_paths = paths.shape[1]
     
-    # 2. Construção do Eixo X Temporal Alinhado
-    tempo = np.linspace(0, T, n_steps + 1)
+    # 2. Construct aligned temporal X-axis
+    time_steps = np.linspace(0, T, n_steps + 1)
     
-    # 3. Instanciação do Analytics para extração das curvas temporais
-    analisador = GBMAnalytics(paths)
-    media_temporal = np.mean(paths, axis=1)  # Evolução da média passo a passo
-    limite_inf, limite_sup = analisador.calcular_intervalos_confianca(nivel_confianca=0.95)
+    # 3. Instantiate the analytics engine to extract temporal statistical curves
+    analyzer = GBMAnalytics(paths)
+    temporal_mean = np.mean(paths, axis=1)  # Step-by-step mean evolution
+    lower_bound, upper_bound = analyzer.calculate_confidence_intervals(confidence_level=0.95)
     
-    # 4. Inicialização da Figura com Proporção de Tela de Relatório (16:9 abreviado)
+    # 4. Initialize figure with standard widescreen report aspect ratio (16:9 compressed)
     fig, ax = plt.subplots(figsize=(11, 6))
     
-    # 5. Plotagem da Nuvem de Caminhos Amostrados (Garante performance visual)
-    # Seleciona apenas os primeiros 'max_caminhos_plot' para não travar o renderizador
-    caminhos_amostra = paths[:, :max_caminhos_plot]
+    # 5. Plot a sample cloud of simulated paths (Ensures UI rendering performance)
+    # Restricts plotting to 'max_paths_to_plot' to avoid thread blocking
+    sampled_paths = paths[:, :max_paths_to_plot]
     
-    # O Matplotlib plota cada coluna como uma linha isolada automaticamente
-    ax.plot(tempo, caminhos_amostra, color="gray", alpha=0.15, linewidth=0.8, label="_nolegend_")
+    # Matplotlib automatically maps each column as an isolated line
+    ax.plot(time_steps, sampled_paths, color="gray", alpha=0.15, linewidth=0.8, label="_nolegend_")
     
-    # 6. Plotagem das Curvas Estatísticas de Controle (Sinal)
-    ax.plot(tempo, media_temporal, color="#1f77b4", linestyle="--", linewidth=2, label="Preço Médio Esperado")
-    ax.plot(tempo, limite_inf, color="#d62728", linestyle="-", linewidth=1.5, label="Limite Inferior (IC 95%)")
-    ax.plot(tempo, limite_sup, color="#2ca02c", linestyle="-", linewidth=1.5, label="Limite Superior (IC 95%)")
+    # 6. Plot statistical control signal curves
+    ax.plot(time_steps, temporal_mean, color="#1f77b4", linestyle="--", linewidth=2, label="Expected Mean Price")
+    ax.plot(time_steps, lower_bound, color="#d62728", linestyle="-", linewidth=1.5, label="Lower Bound (95% CI)")
+    ax.plot(time_steps, upper_bound, color="#2ca02c", linestyle="-", linewidth=1.5, label="Upper Bound (95% CI)")
     
-    # 7. Sombreamento da Zona de Confiança (Padrão de Relatório de Risco)
-    ax.fill_between(tempo, limite_inf, limite_sup, color="gray", alpha=0.07, label="Zona de Confiança (95%)")
+    # 7. Shading the Confidence Envelope (Standard Risk Management reporting layout)
+    ax.fill_between(time_steps, lower_bound, upper_bound, color="gray", alpha=0.07, label="Confidence Zone (95%)")
     
-    # 8. Estilização e Ajustes Finos de Interface (Estilo Bloomberg/Reuters Terminal)
-    ax.set_title(f"Simulação de Monte Carlo - GBM ({n_paths:,} Caminhos)", fontsize=14, fontweight="bold", pad=15)
-    ax.set_xlabel("Horizonte Temporal (Anos)", fontsize=11, labelpad=10)
-    ax.set_ylabel("Preço do Ativo ($)", fontsize=11, labelpad=10)
+    # 8. Fine-tuning and interface styling (Bloomberg/Reuters Terminal style)
+    ax.set_title(f"Monte Carlo Simulation - GBM ({n_paths:,} Paths)", fontsize=14, fontweight="bold", pad=15)
+    ax.set_xlabel("Time Horizon (Years)", fontsize=11, labelpad=10)
+    ax.set_ylabel("Asset Price ($)", fontsize=11, labelpad=10)
     
-    # Fixar a origem do eixo X exatamente no dia zero
+    # Clip X-axis origin strictly at day zero
     ax.set_xlim(0, T)
     
-    # Configuração de Grid sutil para leitura de coordenadas
+    # Subtle grid configuration for coordinate tracking
     ax.grid(True, linestyle=":", alpha=0.6, color="gray")
     
-    # Posicionamento estratégico da legenda (evita sobrepor o início da simulação S0)
+    # Strategic legend positioning (prevents overlaying the S0 initial price cluster)
     ax.legend(loc="upper left", frameon=True, facecolor="white", edgecolor="none", shadow=False)
     
-    # Otimização de margens e exibição
+    # Optimize layout margins and display rendering
     plt.tight_layout()
     plt.show()
