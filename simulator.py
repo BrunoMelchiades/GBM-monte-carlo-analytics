@@ -1,51 +1,52 @@
 import numpy as np
 
 
-def simulate_gbm(S0, mu, sigma, T, n_steps, n_paths):
+def simulate_gbm(S0: float, drift: float, sigma: float, T: float, n_steps: int, n_paths: int) -> np.ndarray:
     """
-    Simulador de Monte Carlo para o Movimento Geométrico Browniano (GBM).
-    Utiliza vetorização pura em NumPy para alta performance.
+    Monte Carlo simulator for Geometric Brownian Motion (GBM).
+    Utilizes pure NumPy vectorization for high-performance execution.
     
-    Parâmetros:
-    S0      : Preço inicial do ativo (float)
-    mu      : Drift/Tendência média de retorno anualizado (float)
-    sigma   : Volatilidade anualizada (float)
-    T       : Tempo total da projeção em anos (float)
-    n_steps : Número de intervalos de tempo (int)
-    n_paths : Número de cenários independentes a simular (int)
+    Parameters:
+        S0      : Initial asset price (float)
+        drift   : Annualized expected return rate (represented by μ) (float)
+        sigma   : Annualized volatility rate (represented by σ) (float)
+        T       : Total time horizon projected in years (float)
+        n_steps : Number of discrete time intervals (int)
+        n_paths : Number of independent simulated scenarios (int)
     
-    Retorna:
-    paths   : Matrix NumPy de formato (n_steps + 1, n_paths) com as evoluções dos preços
+    Returns:
+        paths   : NumPy matrix of shape (n_steps + 1, n_paths) containing simulated price trajectories
     """
-    # 1. Delta de tempo para cada passo
+    # 1. Time delta for each discrete step
     dt = T / n_steps
     
-    # 2. Geração da matriz de choques aleatórios Gaussianos ~ N(0, 1)
+    # 2. Generate matrix of random Gaussian shocks ~ N(0, 1)
     Z = np.random.normal(size=(n_steps, n_paths))
     
-    # 3. Cálculo dos fatores de retorno contínuo usando o Lema de Itô
-    factor = np.exp((mu - 0.5 * sigma**2) * dt + sigma * np.sqrt(dt) * Z)
+    # 3. Compute continuous return factors using Itô's Lemma
+    factor = np.exp((drift - 0.5 * sigma**2) * dt + sigma * np.sqrt(dt) * Z)
     
-    # 4. Criação da matriz final com o preço inicial S0 na linha zero
+    # 4. Initialize final matrix and anchor initial price S0 at step zero
     paths = np.empty((n_steps + 1, n_paths))
     paths[0, :] = S0
     
-    # 5. Aplicação do produtório acumulado diretamente na fatia da matriz (Vetorização eficiente)
+    # 5. Apply cumulative product across the time axis (Efficient matrix slicing)
     paths[1:, :] = S0 * np.cumprod(factor, axis=0)
     
     return paths
 
 if __name__ == "__main__":
-    # Testando com parâmetros padrão
-    S0 = 100
-    mu = 0.10
+    # Test suite executing with standard desk parameters
+    S0 = 100.0
+    drift = 0.10
     sigma = 0.20
     T = 1.0
     n_steps = 252
     n_paths = 10000
 
-    resultado = simulate_gbm(S0, mu, sigma, T, n_steps, n_paths)
+    simulation_results = simulate_gbm(S0, drift, sigma, T, n_steps, n_paths)
 
-    print(f"Formato da matriz final: {resultado.shape}")
-    print(f"Preço inicial no primeiro caminho: {resultado[0, 0]}")
-    print(f"Preço final estimado no primeiro caminho: {resultado[-1, 0]}")
+    # Validate tensor properties directly in terminal
+    print(f"Final matrix shape: {simulation_results.shape}")
+    print(f"Initial asset price on the first path: {simulation_results[0, 0]:.2f}")
+    print(f"Estimated final price on the first path: {simulation_results[-1, 0]:.2f}")
