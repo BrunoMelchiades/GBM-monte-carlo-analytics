@@ -1,42 +1,42 @@
 import numpy as np
 from simulator import simulate_gbm
 from analytics import GBMAnalytics
-from plotter import plotar_simulacao
+from plotter import plot_simulation
 
 def main() -> None:
     """
-    Orquestrador principal do Pipeline Quantitativo.
-    Define os parâmetros de mercado, executa a simulação de Monte Carlo
-    e dispara a engine estatística de risco.
+    Main orchestrator for the Quantitative Analytics Pipeline.
+    Defines market parameters, executes the Monte Carlo simulation,
+    and triggers the statistical risk engine.
     """
-    print("[INFO] Inicializando pipeline de análise quantitativa...")
+    print("[INFO] Initializing quantitative analytics pipeline...")
 
     # =========================================================================
-    # 1. PARAMETRIZAÇÃO DE MERCADO (Exemplo com ativo spot a $100)
+    # 1. MARKET PARAMETERIZATION (Example with spot asset at $100)
     # =========================================================================
-    S0 = 100.0          # Preço inicial do ativo (Spot)
-    mu = 0.08           # Taxa de retorno esperada (Anualizada)
-    sigma = 0.25        # Volatilidade implícita/histórica (Anualizada)
-    T = 1.0             # Horizonte temporal em anos (1 ano)
-    n_steps = 252       # Dias de negociação em um ano investido (Time Steps)
-    n_paths = 10_000    # Número de cenários independentes via Monte Carlo
+    S0 = 100.0          # Initial asset price (Spot)
+    drift = 0.08        # Annualized expected return rate (represented by μ)
+    sigma = 0.25        # Annualized historical/implied volatility (represented by σ)
+    T = 1.0             # Time horizon in years (1 year)
+    n_steps = 252       # Trading days in a standard investment year (Time Steps)
+    n_paths = 10_000    # Number of independent Monte Carlo scenarios (Paths)
 
     # =========================================================================
-    # 2. EXECUÇÃO DA ENGINE DE SIMULAÇÃO (VETORIZADA)
+    # 2. SIMULATION ENGINE EXECUTION (VECTORIZED)
     # =========================================================================
-    paths = simulate_gbm(S0, mu, sigma, T, n_steps, n_paths)
+    paths = simulate_gbm(S0, drift, sigma, T, n_steps, n_paths)
 
     # =========================================================================
-    # 3. INSTANCIAÇÃO DA CLASSE ANALÍTICA E OUTPUT
+    # 3. ANALYTICS ENGINE INSTANTIATION & OUTPUT
     # =========================================================================
-    # O objeto consome a matriz gerada e isola a lógica de risco
-    analisador = GBMAnalytics(paths)
+    # The analyzer object consumes the generated matrix and isolates risk logic
+    analyzer = GBMAnalytics(paths)
     
-    # Exibe o Relatório de Mesa estruturado no terminal
-    analisador.exibir_relatorio()
+    # Displays the structured Trading Desk Report in the terminal
+    analyzer.generate_desk_report()
 
-    # Exibe uma representação visual do relatório
-    plotar_simulacao(paths, T)
+    # Generates the institutional-grade visual plot
+    plot_simulation(paths, T)
 
 if __name__ == "__main__":
     main()
